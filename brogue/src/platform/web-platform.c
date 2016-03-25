@@ -34,10 +34,12 @@ static void sendStatusUpdate(){
 // This function is used both for checking input and pausing
     static boolean web_pauseForMilliseconds(short milliseconds)
 {
-    emscripten_sleep(milliseconds);
+    emscripten_sleep_with_yield(5000);
     EM_ASM({
       console.log('checking for input...');
     });
+
+    return false;
 }
 
 static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, boolean colorsDance)
