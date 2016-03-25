@@ -1,0 +1,249 @@
+
+/**
+Table Of Contents
+=======================================
+0.0 - General
+    0.1 - Base
+    0.2 - Control
+    0.3 - Forms
+1.0 - Lobby
+2.0 - Console
+3.0 - Popup
+*/
+
+/*=====================================
+ * 0.0 - Reset
+ ====================================*/
+
+/* 0.1 Base Styles ------------------*/
+
+body{
+    margin: 0;
+    padding: 0;
+    background-color: #000000;
+    font-family: Source Code Pro, monospace;
+    color: #ffffff;
+}
+
+a{
+    color: #aaaaaa;
+}
+
+a:hover{
+    color: #ffffff;
+}
+
+/* 0.2 Control Styles ---------------*/
+
+.inactive{
+    display : none;
+}
+
+/* 0.3 Form Styles -------------------*/
+
+label {
+    display: block;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+input {
+    display: block;
+    margin-bottom: 10px;
+    
+}
+
+input[type="radio"]{
+    display: inline;
+}
+
+button {
+    display: block;
+}
+
+/*=====================================
+ * 1.0 Lobby
+ *===================================*/
+
+.loading{
+    text-align: center;
+}
+
+.header {
+    margin: 0 2.5%;
+    text-align: right;
+}
+
+.banner {
+    display: block;
+    width: 100%;
+    margin: 1em 0 0 0;
+}
+
+.auth, 
+.play,
+.about,
+.current-games,
+.saved-games {
+    margin: 0 2.5%;
+    width: 225px;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    word-wrap:break-word;
+}
+
+.auth form{
+    width: 225px;
+    margin: 0 auto;
+}
+
+.auth input {
+    width: 100%; 
+}
+
+.auth button{
+    float: right;
+}
+
+.current-games,
+.saved-games {
+    width: 100%;
+}
+
+.current-games table,
+.saved-games table {
+    width: 95%;
+}
+
+.current-games th,
+.current-games td,
+.saved-games th,
+.saved-games td {
+    text-align: left;
+}
+
+@media screen and (min-width: 700px){
+    .banner {
+        width: auto;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .about{
+        width: 225px;
+    }
+    
+    .auth,
+    .play,
+    .about{
+        float: left;
+        clear: left;
+    }
+    
+    .auth form{
+        margin: 0 10%;
+    }
+    
+    .auth.logged-in{
+        float: none;
+        clear: both;
+        width: auto;
+        text-align: right;
+    }
+    
+    .current-games,
+    .saved-games {
+        margin: 0 2.5% 0 7.5%;
+        padding-left: 250px;
+    }
+}
+
+/*=====================================
+ * 2.0 Console
+ *===================================*/
+
+.console {
+    position : relative;
+    box-sizing : border-box;
+    -moz-box-sizing: border-box;
+    overflow : hidden;
+    font-family: Source Code Pro, monospace;
+   -moz-user-select: none;
+   -webkit-user-select: none;
+   -ms-user-select: none;
+}
+
+.console.full-height {
+    height : 100vh;
+}
+
+.console.partial-height {
+    height : 95vh;
+}
+
+.console.full-width {
+    width : 100%;
+}
+
+.console.partial-width {}
+
+/*hidden in the corner so we can still give it focus*/
+.console-keyboard{
+    position:fixed;
+    width: 1px;
+    height: 1px;
+    border: none;
+    outline: none;
+    overflow: hidden;
+}
+
+.console-cell{
+    position : absolute;
+    overflow: hidden;
+    text-align: center;
+}
+
+/*=====================================
+ * 3.0 Popup
+ *===================================*/
+
+.popup{
+    position: fixed;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 5px;
+    border: 3px double #ffffff;
+    background-color: #000000;
+}
+
+.popup .close {
+    position: absolute;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
+    border: 1px solid #ffffff;
+    background-color: #000000;
+    padding-top: 2px;
+    width: 15px;
+    height: 15px;
+    line-height: 15px;
+    font-size: 12px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.popup-overlay{
+    position: fixed;
+    z-index: 1;
+    top:0;
+    right: 0;
+    left:0;
+    bottom:0;
+}
+
+.popup button{
+    float: right;
+}
