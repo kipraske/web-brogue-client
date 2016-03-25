@@ -1,31 +1,12 @@
-Web Brogue
-==========
+Web Brogue Client
+==================
 
-A web server for playing the Brogue over the internet.  Brogue is a game for Mac OS X, Windows, and Linux by Brian Walker.  For more information go https://sites.google.com/site/broguegame/.  The server only can be run on a POSIX environment at the moment.
+An attempt to port Brogue to javascript to be played on the client. Brogue is a game for Mac OS X, Windows, and Linux by Brian Walker.  For more information go https://sites.google.com/site/broguegame/.
 
-Build Instructions
------------------------
+The current plan is to compile the original Brogue into asm.js using [emscripten](https://kripken.github.io/emscripten-site/index.html) and then build hooks into the existing output client that we built for the web-brogue project. The idea here is to create a more robust client which doesn't rely on massive amounts of server data being sent over the pipeline to update.
 
-###Step 1: Get Dependencies ###
+This may or may not work, but I have a promising design at the moment, and with the first commit of this repository officially got brogue to compile to javascript and accept I/O asynchronously.
 
-Get the latest version of node.js and mongoDB.  Since node.js is still a bit unstable, I would recommend getting the package directly from their site rather than from the repositories
-
-### Step 2: Get node packages
-Navigate to the server directory and run `npm install` to get the node dependencies
-
-### Step 3: Build Brogue Executable ###
-
-Because I am just dumping the data from brogue over to the node server, there are not any special dependencies for compiling brogue.  So you don't need SDL, tcod, or ncurses to get it to compile.  It should be as simple as `make web` in the brogue directory and it will place the executable in brogue/bin.
-
-Starting the Server
-----------------------------
-
-Starting the server should be as simple as starting up mongoDB and starting the node process.  You will probably need root permissions to start both of these processes:
-
-1. To start the mongodb daemon type `mongod`
-2. To start our server type `node server/app.js` or jus `node server/` from the root directory
-
-If everything is running correctly it should say "Server listening on port 80"
 
 Upgrading Brogue
 ------------------------------
@@ -38,7 +19,3 @@ To upgrade brogue, grab the latest version of the brogue source code from https:
 * Update the makefile
 
 Future updates to brogue will likely not prevent any of these updates from being added, though care must be given if the platform-dependant logic changes for some reason.
-
-Server Configuration
---------------------------------
-Server global configuration variables are defined in server/config.js. You may need to adjust these depending on how your environment is set up.
