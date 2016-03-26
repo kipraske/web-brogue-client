@@ -14,7 +14,9 @@ define([
 ], function(brogueFullRandMsg, brogueFewRandMsg, brogueUpdateCell, showIncomingMessages, showOutgoingMessages, showIncomingDataUse, autoplay, customMessage, customKeyMessage, customMouseMessage) {
 
     function attach(){
-        window.brogue = {
+        window.brogue = window.brogue || {};
+
+        window.brogue.debug = {
             updateConsoleFullRandom : brogueFullRandMsg,
             updateConsoleFewRandom : brogueFewRandMsg,
             updateConsoleSingleCell : brogueUpdateCell,
@@ -31,5 +33,3 @@ define([
     return attach;
 
 });
-
-

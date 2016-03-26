@@ -26,10 +26,10 @@ require([
     "views/popups/seed-popup-view",
     "views/popups/duplicate-process-popup-view"
 ], function( $, _, Backbone, debugMode, socket, router, activate, AuthView, PlayView, HeaderView, CurrentGamesView, SavedGamesView, ConsoleView, ConsoleKeyProcessingView, SeedPopupView, DuplicateBroguePopupView){
-    
+
     // If you want to enable debug mode, uncomment this function
     debugMode();
-    
+
     // initialize each view
     var authView = new AuthView();
     var playView = new PlayView();
@@ -42,31 +42,33 @@ require([
         seedView : new SeedPopupView(),
         duplicateBrogueView : new DuplicateBroguePopupView()
     };
-    
-    // set up routes for the websocket connection
-    router.registerHandlers({
-        //Must bind 'this' to the scope of the view so we can use the internal view functions
-        "error" : console.error.bind(console),
-        "brogue" : consoleView.queueUpdateCellModelData.bind(consoleView),
-        "quit" : consoleView.exitToLobby.bind(consoleView),
-        "lobby" : currentGamesView.updateRowModelData.bind(currentGamesView),
-        "saved games" : savedGamesView.updateRowModelData.bind(savedGamesView),
-        "auth" : authView.handleMessage.bind(authView),
-        "header" : headerView.setUserData.bind(headerView),
-        "seed" : popups.seedView.handleMessage.bind(popups.seedView),
-        "duplicate brogue" : popups.duplicateBrogueView.handleMessage.bind(popups.duplicateBrogueView)
-    });
-    
-    // clean up application
-    $(window).on("unload", function(){
-        socket.close();
-    });
-    
+
+    // // set up routes for the websocket connection
+    // router.registerHandlers({
+    //     //Must bind 'this' to the scope of the view so we can use the internal view functions
+    //     "error" : console.error.bind(console),
+    //     "brogue" : consoleView.queueUpdateCellModelData.bind(consoleView),
+    //     "quit" : consoleView.exitToLobby.bind(consoleView),
+    //     "lobby" : currentGamesView.updateRowModelData.bind(currentGamesView),
+    //     "saved games" : savedGamesView.updateRowModelData.bind(savedGamesView),
+    //     "auth" : authView.handleMessage.bind(authView),
+    //     "header" : headerView.setUserData.bind(headerView),
+    //     "seed" : popups.seedView.handleMessage.bind(popups.seedView),
+    //     "duplicate brogue" : popups.duplicateBrogueView.handleMessage.bind(popups.duplicateBrogueView)
+    // });
+    //
+    // // clean up application
+    // $(window).on("unload", function(){
+    //     socket.close();
+    // });
+
+    // Bind view handlers to the asm-bridge object
+
     // responsive resizing
     var throttledResize = _.debounce(function(){
             consoleView.resize();
         }, 100);
     $(window).resize(throttledResize);
-    
+
     activate.endLoading();
 });

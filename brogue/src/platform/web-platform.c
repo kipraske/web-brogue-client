@@ -15,15 +15,37 @@ static void gameLoop()
 }
 
 static void web_plotChar(uchar inputChar,
-			  short xLoc, short yLoc,
-			  short foreRed, short foreGreen, short foreBlue,
-			  short backRed, short backGreen, short backBlue) {
+  short xLoc, short yLoc,
+  short foreRed, short foreGreen, short foreBlue,
+  short backRed, short backGreen, short backBlue) {
 
-EM_ASM_ARGS({
-  console.log('I got (x,y): ' + [$0, $1]);
-}, xLoc, yLoc);
+    // Reprocess colors to be on scale of 0-255 instead of 0-100
+    // I know these names are dumb but you only have to see them for 10 lines
+    char fr = foreRed * 255 / 100;
+    char fg = foreGreen * 255 / 100;
+    char fb = foreBlue * 255 / 100;
+    char br = backRed * 255 / 100;
+    char bg = backGreen * 255 / 100;
+    char bb = backBlue * 255 / 100;
 
-}
+    // EM_ASM_ARGS only allows a max of 8 arguments. So we need to split these up
+    EM_ASM_ARGS({
+      brogue.bridge.plotChar.prepareLoc($0, $1);
+    }, xLoc, yLoc);
+
+    EM_ASM_ARGS({
+      brogue.bridge.plotChar.prepareForeGround($0, $1, $2, $3);
+    }, inputChar, fr, fg, fb);
+
+    EM_ASM_ARGS({
+      brogue.bridge.plotChar.prepareBackGround($0, $1, $2);
+    }, br, bg, bb);
+
+    EM_ASM({
+      brogue.bridge.plotChar.commitDraw();
+    });
+
+  }
 
 static void sendStatusUpdate(){
   EM_ASM({
