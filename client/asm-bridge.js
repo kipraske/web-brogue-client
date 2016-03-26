@@ -1,8 +1,9 @@
 /**
 * This is my trick that I decided to use to bridge the asm.js code generated
 * by emscripten and my normal frontend javascript app. In order to reach
-* these variables and functions from brogue, I am just going to put everything
-* in the global namespace.
+* these variables and functions from brogue as well as the view app,
+* I am just going to put everything binding related into the brogue object
+* in the global namespace
 */
 
 window.brogue = {};
