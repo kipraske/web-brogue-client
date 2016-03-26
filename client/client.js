@@ -1,7 +1,7 @@
 // Main entry point in the client side application.  Initializes all main views.
 
 require.config({
-    paths: {
+  paths: {
 	jquery : "libs/jquery",
 	underscore : "libs/underscore",
 	backbone : "libs/backbone"
@@ -52,6 +52,9 @@ require([
 
     // Skip the lobby altogether
     activate.console();
+
+    // Rather than routes bind view functions to the global brogue bridge
+    brogue.viewBindings.update = consoleView.updateSingleCellModelData.bind(consoleView);
 
     // // set up routes for the websocket connection
     // router.registerHandlers({

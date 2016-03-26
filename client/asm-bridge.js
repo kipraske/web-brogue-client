@@ -8,6 +8,10 @@
 
 window.brogue = {};
 
+brogue.viewBindings = {
+	update : function(){}
+};
+
 brogue.bridge = {
 	plotChar : {
 		// can only pass up to 8 arguments at a time, so we split up these
@@ -28,7 +32,7 @@ brogue.bridge = {
 			brogue.state.nextPlotChar.bBlue = backGreen;
 		},
 		commitDraw : function(){
-			console.log(brogue.state.nextPlotChar);
+			brogue.viewBindings.update(brogue.state.nextPlotChar);
 		}
 	}
 };
@@ -45,8 +49,4 @@ brogue.state = {
 		bGreen : 0,
 		bBlue : 0
 	}
-};
-
-brogue.viewBindings = {
-
 };

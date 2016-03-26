@@ -4,11 +4,13 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    'dataIO/send-keypress',
+    //'dataIO/send-keypress',
     "views/console-cell-view",
     "models/console-cell",
     "views/view-activation-helpers"
-], function($, _, Backbone, sendKeypressEvent, ConsoleCellView, CellModel, activate) {
+], function($, _, Backbone,
+  //sendKeypressEvent,
+  ConsoleCellView, CellModel, activate) {
 
     var _CONSOLE_ROWS = 34;
     var _CONSOLE_COLUMNS = 100;
@@ -41,7 +43,7 @@ define([
         },
         initializeConsoleCells: function() {
             var consoleCellsFragment = document.createDocumentFragment();
-            
+
             for (var i = 0; i < _CONSOLE_COLUMNS; i++) {
                 var column = [];
                 for (var j = 0; j < _CONSOLE_ROWS; j++) {
@@ -66,7 +68,7 @@ define([
                 }
                 _consoleCells.push(column);
             }
-            
+
             this.$el.append(consoleCellsFragment);
         },
         calculateConsoleSize: function() {
@@ -81,7 +83,7 @@ define([
             var cellPixelHeight = cellPixelWidth / _consoleCellAspectRatio;
 
             //If this height will make the console go off screen, recalculate size and horizontally center instead
-            if (cellPixelHeight * _CONSOLE_ROWS > _consoleHeight) {              
+            if (cellPixelHeight * _CONSOLE_ROWS > _consoleHeight) {
                 cellPixelHeight = _consoleHeight / _CONSOLE_ROWS;
                 cellPixelWidth = cellPixelHeight * _consoleCellAspectRatio;
 
@@ -130,7 +132,7 @@ define([
                 }
             }
         },
-        
+
         queueUpdateCellModelData : function(data){
             // todo -- comment
             var self = this;
@@ -168,7 +170,21 @@ define([
                 _consoleCells[dataXCoord][dataYCoord].render();
             }
         },
-        
+
+        updateSingleCellModelData : function(plotData) {
+          _consoleCells[plotData.x][plotData.y].model.set({
+              char: plotData.char,
+              foregroundRed: plotData.fRed,
+              foregroundGreen: plotData.fGreen,
+              foregroundBlue: plotData.fBlue,
+              backgroundRed: plotData.bRed,
+              backgroundGreen: plotData.bGreen,
+              backgroundBlue: plotData.bBlue
+          });
+
+          _consoleCells[plotData.x][plotData.y].render();
+        },
+
         clearConsole : function(){
             for (var i = 0; i < _CONSOLE_COLUMNS; i++) {
                 for (var j = 0; j < _CONSOLE_ROWS; j++) {
@@ -177,11 +193,11 @@ define([
                 }
             }
         },
-        
+
         giveKeyboardFocus : function(){
             $('#console-keyboard').focus();
         },
-        
+
         exitToLobby : function(message){
             activate.lobby();
             this.clearConsole();
