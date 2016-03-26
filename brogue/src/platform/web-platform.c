@@ -56,7 +56,7 @@ static void sendStatusUpdate(){
 // This function is used both for checking input and pausing
     static boolean web_pauseForMilliseconds(short milliseconds)
 {
-    emscripten_sleep_with_yield(5000);
+    emscripten_sleep_with_yield(milliseconds);
     EM_ASM({
       console.log('checking for input...');
     });
