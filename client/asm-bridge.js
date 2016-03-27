@@ -23,13 +23,13 @@ brogue.bridge = {
 		prepareForeGround : function(inputChar, foreRed, foreGreen, foreBlue){
 			brogue.state.nextPlotChar.char = inputChar;
 			brogue.state.nextPlotChar.fRed = foreRed;
-			brogue.state.nextPlotChar.fBlue = foreBlue;
+			brogue.state.nextPlotChar.fGreen = foreGreen;
 			brogue.state.nextPlotChar.fBlue = foreGreen;
 		},
 		prepareBackGround : function(backRed, backGreen, backBlue){
 			brogue.state.nextPlotChar.bRed = backRed;
+			brogue.state.nextPlotChar.bGreen = backGreen;
 			brogue.state.nextPlotChar.bBlue = backBlue;
-			brogue.state.nextPlotChar.bBlue = backGreen;
 		},
 		commitDraw : function(){
 			brogue.viewBindings.update(brogue.state.nextPlotChar);

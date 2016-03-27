@@ -20,13 +20,12 @@ static void web_plotChar(uchar inputChar,
   short backRed, short backGreen, short backBlue) {
 
     // Reprocess colors to be on scale of 0-255 instead of 0-100
-    // I know these names are dumb but you only have to see them for 10 lines
-    char fr = foreRed * 255 / 100;
-    char fg = foreGreen * 255 / 100;
-    char fb = foreBlue * 255 / 100;
-    char br = backRed * 255 / 100;
-    char bg = backGreen * 255 / 100;
-    char bb = backBlue * 255 / 100;
+    foreRed = foreRed * 255 / 100;
+    foreGreen = foreGreen * 255 / 100;
+    foreBlue = foreBlue * 255 / 100;
+    backRed = backRed * 255 / 100;
+    backGreen = backGreen * 255 / 100;
+    backBlue = backBlue * 255 / 100;
 
     // EM_ASM_ARGS only allows a max of 8 arguments. So we need to split these up
     EM_ASM_ARGS({
@@ -35,11 +34,11 @@ static void web_plotChar(uchar inputChar,
 
     EM_ASM_ARGS({
       brogue.bridge.plotChar.prepareForeGround($0, $1, $2, $3);
-    }, inputChar, fr, fg, fb);
+    }, inputChar, foreRed, foreGreen, foreBlue);
 
     EM_ASM_ARGS({
       brogue.bridge.plotChar.prepareBackGround($0, $1, $2);
-    }, br, bg, bb);
+    }, backRed, backGreen, backBlue);
 
     EM_ASM({
       brogue.bridge.plotChar.commitDraw();
