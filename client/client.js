@@ -54,7 +54,7 @@ require([
     activate.console();
 
     // Rather than routes bind view functions to the global brogue bridge
-    brogue.viewBindings.update = consoleView.updateSingleCellModelData.bind(consoleView);
+    brogue.viewBindings.updateCell = consoleView.updateSingleCellModelData.bind(consoleView);
 
     // // set up routes for the websocket connection
     // router.registerHandlers({

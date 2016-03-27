@@ -4,11 +4,8 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    //"dataIO/send-mouse",
     "models/console-cell"
-], function($, _, Backbone,
-  //sendMouseEvent, 
-  CellModel) {
+], function($, _, Backbone, CellModel) {
 
     // See BrogueCode/rogue.h for all brogue event definitions
     var MOUSE_UP_EVENT_CHAR = 1;
@@ -55,14 +52,14 @@ define([
         },
 
         handleClick : function(event){
-            sendMouseEvent(
+            brogue.bridge.sendInput.mouse(
                 MOUSE_DOWN_EVENT_CHAR,
                 this.model.get("x"),
                 this.model.get("y"),
                 event.ctrlKey,
                 event.shiftKey
             );
-            sendMouseEvent(
+            brogue.bridge.sendInput.mouse(
                 MOUSE_UP_EVENT_CHAR,
                 this.model.get("x"),
                 this.model.get("y"),

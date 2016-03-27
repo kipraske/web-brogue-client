@@ -4,12 +4,10 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    //'dataIO/send-keypress',
     "views/console-cell-view",
     "models/console-cell",
     "views/view-activation-helpers"
 ], function($, _, Backbone,
-  //sendKeypressEvent,
   ConsoleCellView, CellModel, activate) {
 
     var _CONSOLE_ROWS = 34;
@@ -130,44 +128,6 @@ define([
                     _consoleCells[i][j].model.calculatePositionAttributes();
                     _consoleCells[i][j].applySize();
                 }
-            }
-        },
-
-        queueUpdateCellModelData : function(data){
-            // todo -- comment
-            var self = this;
-            setTimeout(function(){
-                self.updateCellModelData(data);
-            }, 0);
-        },
-        updateCellModelData: function (data) {
-            var dataArray = new Uint8Array(data);
-            var dataLength = dataArray.length;
-            var dIndex = 0;
-
-            while (dIndex < dataLength) {
-                var dataXCoord = dataArray[dIndex++];
-                var dataYCoord = dataArray[dIndex++];
-
-                // Status updates have coords (255,255). For now ignore these, eventually we may find a UI use for them
-                if (dataXCoord === 255 && dataYCoord === 255){
-                    dIndex += _MESSAGE_UPDATE_SIZE - 2;
-                    continue;
-                }
-
-                var combinedUTF16Char = dataArray[dIndex++] << 8 | dataArray[dIndex++];
-
-                _consoleCells[dataXCoord][dataYCoord].model.set({
-                    char: combinedUTF16Char,
-                    foregroundRed: dataArray[dIndex++],
-                    foregroundGreen: dataArray[dIndex++],
-                    foregroundBlue: dataArray[dIndex++],
-                    backgroundRed: dataArray[dIndex++],
-                    backgroundGreen: dataArray[dIndex++],
-                    backgroundBlue: dataArray[dIndex++]
-                });
-
-                _consoleCells[dataXCoord][dataYCoord].render();
             }
         },
 

@@ -5,12 +5,11 @@ define([
     "underscore",
     "backbone",
     "models/console-keyboard",
-    "dataIO/send-keypress"
-], function($, _, Backbone, ConsoleKeyboardModel, sendKeypressEvent){
+], function($, _, Backbone, ConsoleKeyboardModel){
 
     // See BrogueCode/rogue.h for all brogue event definitions
     var KEYPRESS_EVENT_CHAR = 0;
-    
+
     var ConsoleKeyProcessor = Backbone.View.extend({
         el : '#console-keyboard',
         model : new ConsoleKeyboardModel(),
@@ -18,23 +17,23 @@ define([
             'keydown' : 'keydownHandler',
             'input' : 'inputHandler'
         },
-        
+
         // keydown event fires before input is fired
-        keydownHandler : function(event){            
+        keydownHandler : function(event){
             var keyCode = event.keyCode;
             var ctrlKey = event.ctrlKey;
             var shiftKey = event.shiftKey;
-            
+
             this.model.set("ctrlKeyHeld", ctrlKey);
             this.model.set("shiftKeyHeld", shiftKey);
-            
+
             // Ignore key events for lone modifiers
             if (keyCode === 16 ||       // Shift
                     keyCode === 17 ||   // Ctrl
                     keyCode === 18) {   // Alt
                 return;
             }
-            
+
             var returnCode;
 
             // Check brogue/rogue.h for key definitions within brogue
@@ -79,30 +78,30 @@ define([
                     returnCode = 63233;
                     break;
             }
-            
+
             if (returnCode){
                 event.preventDefault();
             }
-            
-            sendKeypressEvent(KEYPRESS_EVENT_CHAR, returnCode, ctrlKey, shiftKey);
+
+            brogue.bridge.sendInput.keypress(KEYPRESS_EVENT_CHAR, returnCode, ctrlKey, shiftKey);
         },
-        
+
         // input event fires after keydown is fired
         inputHandler : function(event){
-            
+
             var charCode = this.el.value.charCodeAt(0);
             this.el.value = "";
-            
+
             var ctrlKey = this.model.get("ctrlKeyHeld");
             var shiftKey = this.model.get("shiftKeyHeld");
-            
-            sendKeypressEvent(KEYPRESS_EVENT_CHAR, charCode, ctrlKey, shiftKey);
-            
+
+            brogue.bridge.sendInput.keypress(KEYPRESS_EVENT_CHAR, charCode, ctrlKey, shiftKey);
+
             this.model.set("ctrlKeyHeld", false);
             this.model.set("shiftKeyHeld", false);
         }
-        
+
     });
-    
+
     return ConsoleKeyProcessor;
 });
