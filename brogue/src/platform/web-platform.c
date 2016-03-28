@@ -60,15 +60,46 @@ static boolean web_pauseForMilliseconds(short milliseconds)
 static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, boolean colorsDance)
 {
   // because we will halt execution until we get more input, we definitely cannot have any dancing colors from the server side.
-  colorsDance = false;
+  //colorsDance = false;
+  // TODO - implement color dancing, see tcod-platform...
 
-  // We must avoid the main menu, so we spawn this process with noMenu, and quit instead of going to the menu
-  if (noMenu && rogue.nextGame == NG_NOTHING) rogue.nextGame = NG_QUIT;
-
-  EM_ASM({
-    console.log('injecting input into brogue variables...');
+  returnEvent->eventType = EM_ASM_INT_V({
+    return brogue.state.nextEventType;
   });
 
+  if (returnEvent->eventType == KEYSTROKE){
+    // param1 is the keyChar
+    returnEvent->param1 = EM_ASM_INT_V({
+      return brogue.state.nextKeyCode;
+    });
+    returnEvent->controlKey = EM_ASM_INT_V({
+      return brogue.state.nextKeyModifier.ctrlKey;
+    });
+    returnEvent->shiftKey = EM_ASM_INT_V({
+      return brogue.state.nextKeyModifier.shiftKey;
+    });
+  }
+  else // it is a mouseEvent
+  {
+    // param1 is x coordinate
+    returnEvent->param1 = returnEvent->param1 = EM_ASM_INT_V({
+      return brogue.state.nextMouseCoords.x;
+    });
+    // param2 is y coordinate
+    returnEvent->param2 = returnEvent->param1 = EM_ASM_INT_V({
+      return brogue.state.nextMouseCoords.y;
+    });
+    returnEvent->controlKey = EM_ASM_INT_V({
+      return brogue.state.nextKeyModifier.ctrlKey;
+    });
+    returnEvent->shiftKey = EM_ASM_INT_V({
+      return brogue.state.nextKeyModifier.shiftKey;
+    });
+  }
+
+  EM_ASM({
+    brogue.state.nextKeyOrMouseReady = false;
+  });
 }
 
 static void web_remap(const char *input_name, const char *output_name) {

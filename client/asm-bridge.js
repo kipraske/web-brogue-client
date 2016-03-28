@@ -43,26 +43,26 @@ brogue.bridge = {
 	sendInput: {
 		keypress: function(eventCharCode, keyCode, ctrlKey, shiftKey){
 			brogue.state.nextKeyOrMouseReady = true;
-			brogue.state.nextKeyEvent = {
-				eventCode: eventCharCode,
-				keyCode: keyCode,
+			brogue.state.nextEventType = eventCharCode; // should always be 0
+			brogue.state.nextKeyCode = keyCode;
+			brogue.state.nextKeyModifier = {
 				ctrlKey: ctrlKey,
 				shiftKey: shiftKey
 			};
 		},
 		mouse: function(eventCharCode, xCoord, yCoord, ctrlKey, shiftKey){
 			brogue.state.nextKeyOrMouseReady = true;
-			brogue.state.nextMouseEvent = {
-				eventCode: eventCharCode,
+			brogue.state.nextEventType = eventCharCode; // should always be int from 1 to 5
+			brogue.state.nextMouseCoords = {
 				x: xCoord,
-				y: yCoord,
+				y: yCoord
+			};
+			brogue.state.nextKeyModifier = {
 				ctrlKey: ctrlKey,
 				shiftKey: shiftKey
 			};
 		}
-	},
-	// Reads the key event information into the c code from web_nextKeyOrMouseEvent
-	processInput: {}
+	}
 };
 
 brogue.state = {
@@ -78,16 +78,13 @@ brogue.state = {
 		bBlue : 0
 	},
 	nextKeyOrMouseReady : false,
-	nextKeyEvent : {
-		eventCode: 0,
-		keyCode: 0,
-		ctrlKey: 0,
-		shiftKey: 0
-	},
-	nextMouseEvent : {
-		eventCode: 1,
+	nextEventType : 0,
+	nextKeyCode : 0,
+	nextMouseCoords : {
 		x: 0,
-		y: 0,
+		y: 0
+	},
+	nextKeyModifier : {
 		ctrlKey: 0,
 		shiftKey: 0
 	}
