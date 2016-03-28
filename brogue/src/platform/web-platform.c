@@ -57,6 +57,8 @@ static boolean web_pauseForMilliseconds(short milliseconds)
   return input_ready;
 }
 
+#define PAUSE_BETWEEN_EVENT_POLLING		36//17
+
 static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, boolean colorsDance)
 {
   // because we will halt execution until we get more input, we definitely cannot have any dancing colors from the server side.
@@ -100,6 +102,8 @@ static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, 
   EM_ASM({
     brogue.state.nextKeyOrMouseReady = false;
   });
+
+  web_pauseForMilliseconds(PAUSE_BETWEEN_EVENT_POLLING);
 }
 
 static void web_remap(const char *input_name, const char *output_name) {
