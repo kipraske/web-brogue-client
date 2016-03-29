@@ -78,6 +78,10 @@ static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, 
   });
 
   if (!input_ready){
+    if (colorsDance) {
+      shuffleTerrainColors(3, true);
+      commitDraws();
+    }
     emscripten_sleep_with_yield(PAUSE_BETWEEN_EVENT_POLLING);
     web_nextKeyOrMouseEvent(returnEvent, textInput, colorsDance);
   }
