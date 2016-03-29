@@ -6,7 +6,6 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
                 <link href='http://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
 		<link href="style.css" rel="stylesheet" type="text/css" />
-		<script data-main="client.js" src="libs/require.js" type="text/javascript"></script>
 	</head>
 	<body>
                 <noscript> This page will not work without JavaScript. Sorry. Feel free to download brogue and play it on your own computer at <a href="//sites.google.com/site/broguegame/">sites.google.com/site/broguegame/</a> </noscript>
@@ -35,10 +34,10 @@
                 <div id="console" class="console inactive" tabindex="0">
                     <input type="text" id="console-keyboard" class="console-keyboard" />
                 </div>
-                
+
 		<div id="popup" class="popup inactive"></div>
                 <div id="popup-overlay" class="popup-overlay inactive"></div>
-		
+
 		<!-- Templates -->
 		<script id="login" type="text/template">
                 <h2>Login to Play</h2>
@@ -52,7 +51,7 @@
 			<div id="auth-message"></div>
 		</form>
 		</script>
-		
+
 		<script id="register" type="text/template">
                 <h2>Register a New User</h2>
 		<form>
@@ -67,11 +66,11 @@
 			<div id="auth-message"></div>
 		</form>
 		</script>
-		
+
 		<script id="welcome" type="text/template">
 			<div>Logged in as <%= username %> | <a id="logout" href="#logout">Logout</a></div>
 		</script>
-		
+
                 <script id="current-games-heading" type ="text/template">
                     <h2>Current Games</h2>
                     <% if (isEmpty) { %>
@@ -88,7 +87,7 @@
                         </table>
                     <% } %>
                 </script>
-                
+
 		<script id="current-games-row" type="text/template">
                     <td><%= userName %></td>
                     <td><%= formattedIdle %></td>
@@ -96,7 +95,7 @@
                     <td><%= gold %></td>
                     <td><%= seed %></td>
 		</script>
-		
+
 		<script id="saved-games-heading" type ="text/template">
                     <h2>Saved Games</h2>
                     <% if (isEmpty) { %>
@@ -110,12 +109,12 @@
                         </table>
                     <% } %>
                 </script>
-                
+
 		<script id="file-row" type="text/template">
                     <td><a class="file-link" href="#"><%= fileName %></a></td>
                     <td><%= formattedModified %></td>
 		</script>
-                
+
                 <script id="seed-popup" type="text/template">
                     <div id="popup-close" class="close"> X </div>
                     <form>
@@ -125,7 +124,7 @@
                         <div id='seed-validation'></div>
                     </form>
 		</script>
-                
+
                 <script id="duplicate-brogue-popup" type="text/template">
                     <div id="popup-close" class="close"> X </div>
                     <form>
@@ -135,5 +134,70 @@
                         <button type="submit" id="duplicate-brogue-button"> Ok </button>
                     </form>
 		</script>
+		<script type='text/javascript'>
+      var Module = {
+        preRun: [],
+        postRun: [],
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            // These replacements are necessary if you render to raw HTML
+            //text = text.replace(/&/g, "&amp;");
+            //text = text.replace(/</g, "&lt;");
+            //text = text.replace(/>/g, "&gt;");
+            //text = text.replace('\n', '<br>', 'g');
+            console.log(text);
+            if (element) {
+              element.value += text + "\n";
+              element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+          };
+        })(),
+        printErr: function(text) {
+          if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+          if (0) { // XXX disabled for safety typeof dump == 'function') {
+            dump(text + '\n'); // fast, straight to the real console
+          } else {
+            console.error(text);
+          }
+        },
+			}
+    </script>
+		<script>
+
+		(function() {
+			var memoryInitializer = 'brogue.html.mem';
+			if (typeof Module['locateFile'] === 'function') {
+				memoryInitializer = Module['locateFile'](memoryInitializer);
+			} else if (Module['memoryInitializerPrefixURL']) {
+				memoryInitializer = Module['memoryInitializerPrefixURL'] + memoryInitializer;
+			}
+			var xhr = Module['memoryInitializerRequest'] = new XMLHttpRequest();
+			xhr.open('GET', memoryInitializer, true);
+			xhr.responseType = 'arraybuffer';
+			xhr.send(null);
+		})();
+
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'data.binary', true);
+		xhr.responseType = 'arraybuffer';
+		xhr.onload = function() {
+			Module.emterpreterFile = xhr.response;
+
+			var script = document.createElement('script');
+			script.src = "asm-bridge.js";
+			document.body.appendChild(script);
+
+			var script = document.createElement('script');
+			script.src = "brogue.js";
+			document.body.appendChild(script);
+
+		};
+		xhr.send(null);
+
+</script>
+<script data-main="client.js" src="libs/require.js" type="text/javascript"></script>
 	</body>
 </html>

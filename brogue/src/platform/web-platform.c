@@ -2,30 +2,12 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <poll.h>
 #include <unistd.h>
 #include <emscripten.h>
 
 #include "platform.h"
 
-#define NUM_POLL_FIELDS         1
-#define RETURN_POLL_NOW         0
-
-#define OUTPUT_SIZE             10
-#define MAX_INPUT_SIZE          4
-#define MOUSE_INPUT_SIZE        4
-#define KEY_INPUT_SIZE          4
-
-enum StatusTypes {
-    DEEPEST_LEVEL_STATUS,
-    GOLD_STATUS,
-    SEED_STATUS,
-    EASY_MODE_STATUS,
-    STATUS_TYPES_NUMBER
-};
-
 extern playerCharacter rogue;
-static struct pollfd fds[NUM_POLL_FIELDS];
 
 static void gameLoop()
 {
@@ -33,117 +15,100 @@ static void gameLoop()
 }
 
 static void web_plotChar(uchar inputChar,
-			  short xLoc, short yLoc,
-			  short foreRed, short foreGreen, short foreBlue,
-			  short backRed, short backGreen, short backBlue) {
+  short xLoc, short yLoc,
+  short foreRed, short foreGreen, short foreBlue,
+  short backRed, short backGreen, short backBlue) {
 
-    // just pack up the output and ship it off to the webserver
-    char outputBuffer[OUTPUT_SIZE];
+  // Reprocess colors to be on scale of 0-255 instead of 0-100
+  foreRed = foreRed * 255 / 100;
+  foreGreen = foreGreen * 255 / 100;
+  foreBlue = foreBlue * 255 / 100;
+  backRed = backRed * 255 / 100;
+  backGreen = backGreen * 255 / 100;
+  backBlue = backBlue * 255 / 100;
 
-    char firstCharByte = inputChar >> 8 & 0xff;
-    char secondCharByte = inputChar;
+  // EM_ASM_ARGS only allows a max of 8 arguments. So we need to split these up
+  EM_ASM_ARGS({
+    brogue.bridge.plotChar.prepareLoc($0, $1);
+  }, xLoc, yLoc);
 
-    outputBuffer[0] = (char) xLoc;
-    outputBuffer[1] = (char) yLoc;
-    outputBuffer[2] = firstCharByte;
-    outputBuffer[3] = secondCharByte;
-    outputBuffer[4] = (char) foreRed * 255 / 100;
-    outputBuffer[5] = (char) foreGreen * 255 / 100;
-    outputBuffer[6] = (char) foreBlue * 255 / 100;
-    outputBuffer[7] = (char) backRed * 255 / 100;
-    outputBuffer[8] = (char) backGreen * 255 / 100;
-    outputBuffer[9] = (char) backBlue * 255 / 100;
+  EM_ASM_ARGS({
+    brogue.bridge.plotChar.prepareForeGround($0, $1, $2, $3);
+  }, inputChar, foreRed, foreGreen, foreBlue);
 
-    fwrite(outputBuffer, sizeof(char), OUTPUT_SIZE, stdout);
+  EM_ASM_ARGS({
+    brogue.bridge.plotChar.prepareBackGround($0, $1, $2);
+  }, backRed, backGreen, backBlue);
+
+  EM_ASM({
+    brogue.bridge.plotChar.commitDraw();
+  });
 
 }
 
-static void sendStatusUpdate(){
-
-    char statusOutputBuffer[STATUS_TYPES_NUMBER * OUTPUT_SIZE];
-
-    unsigned long statusValues[STATUS_TYPES_NUMBER];
-    statusValues[DEEPEST_LEVEL_STATUS] = rogue.deepestLevel;
-    statusValues[GOLD_STATUS] = rogue.gold;
-    statusValues[SEED_STATUS] = rogue.seed;
-    statusValues[EASY_MODE_STATUS] = rogue.easyMode;
-
-    int i;
-    int j;
-    for (i = 0; i < STATUS_TYPES_NUMBER; i++){
-
-        // Coordinates of (255, 255) will let the server and client know that this is a status update rather than a cell update
-        statusOutputBuffer[0] = 255;
-        statusOutputBuffer[1] = 255;
-
-        // The status type
-        statusOutputBuffer[2] = i;
-
-        // I am just going to explicitly send the status big-endian so we can be consistent on the client and server
-        statusOutputBuffer[3] = statusValues[i] >> 24 & 0xff;
-        statusOutputBuffer[4] = statusValues[i] >> 16 & 0xff;
-        statusOutputBuffer[5] = statusValues[i] >> 8 & 0xff;
-        statusOutputBuffer[6] = statusValues[i];
-
-        // The rest is filler so we keep consistent output size
-        for (j = 7; j < OUTPUT_SIZE; j++){
-            statusOutputBuffer[j] = 0;
-        }
-
-        fwrite(statusOutputBuffer, sizeof(char), OUTPUT_SIZE, stdout);
-    }
-}
-
-// This function is used both for checking input and pausing
-    static boolean web_pauseForMilliseconds(short milliseconds)
+// This function is used for pausing, but also returns if true if there are
+// input events to process
+static boolean web_pauseForMilliseconds(short milliseconds)
 {
-    emscripten_sleep(milliseconds);
+  emscripten_sleep_with_yield(milliseconds);
+  int input_ready = EM_ASM_INT_V({
+    return (brogue.state.eventQueue.length > 0);
+  });
 
-    fds[0].fd = STDIN_FILENO;
-    fds[0].events = POLLIN | POLLPRI;
-    fds[0].revents = 0;
-
-    return (poll(fds, NUM_POLL_FIELDS, RETURN_POLL_NOW) > 0);
+  return input_ready;
 }
 
+#define PAUSE_BETWEEN_EVENT_POLLING		36//17
+
+// This function is used to wait for new key or mouse events.
+// It will not return until we have executed an event
 static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, boolean colorsDance)
 {
-    // because we will halt execution until we get more input, we definitely cannot have any dancing colors from the server side.
-    colorsDance = false;
+  // because we will halt execution until we get more input, we definitely cannot have any dancing colors from the server side.
+  //colorsDance = false;
+  // TODO - implement color dancing, see tcod-platform...
 
-    // We must avoid the main menu, so we spawn this process with noMenu, and quit instead of going to the menu
-    if (noMenu && rogue.nextGame == NG_NOTHING) rogue.nextGame = NG_QUIT;
-
-    // Send a status update of game variables we want on the client
-    sendStatusUpdate();
-
-    // ensure entire stream is written out before getting input
-    fflush(stdout);
-
-    char controlBuffer[1];
-    char inputBuffer[MAX_INPUT_SIZE];
-
-    fread(controlBuffer, sizeof(char), 1, stdin);
-    returnEvent->eventType = controlBuffer[0];
-
-    if (returnEvent->eventType == KEYSTROKE){
-        fread(inputBuffer, sizeof(char), KEY_INPUT_SIZE, stdin);
-
-        unsigned short keyCharacter = inputBuffer[0] << 8 | inputBuffer[1];
-
-        returnEvent->param1 = keyCharacter;  //key character
-        returnEvent->controlKey = inputBuffer[2];
-        returnEvent->shiftKey = inputBuffer[3];
+  int input_ready = EM_ASM_INT_V({
+    if (brogue.state.eventQueue.length > 0){
+      brogue.state.nextEvent = brogue.state.eventQueue.shift();
+      return true;
+    } else {
+      return false;
     }
-    else // it is a mouseEvent
-    {
-        fread(inputBuffer, sizeof(char), MOUSE_INPUT_SIZE, stdin);
-        returnEvent->param1 = inputBuffer[0];  //x coord
-        returnEvent->param2 = inputBuffer[1];  //y coord
-        returnEvent->controlKey = inputBuffer[2];
-        returnEvent->shiftKey = inputBuffer[3];
-    }
+  });
 
+  if (!input_ready){
+    if (colorsDance) {
+      shuffleTerrainColors(3, true);
+      commitDraws();
+    }
+    emscripten_sleep_with_yield(PAUSE_BETWEEN_EVENT_POLLING);
+    web_nextKeyOrMouseEvent(returnEvent, textInput, colorsDance);
+  }
+
+  if (noMenu && rogue.nextGame == NG_NOTHING) rogue.nextGame = NG_NEW_GAME;
+
+  returnEvent->eventType = EM_ASM_INT_V({
+    return brogue.state.nextEvent.eventType;
+  });
+
+  // param1 is the keyChar for Keystroke or xCoord for Mouse
+  returnEvent->param1 = EM_ASM_INT_V({
+    return brogue.state.nextEvent.param1;
+  });
+
+  if (returnEvent->eventType != KEYSTROKE){ //so a mouse event
+    // param2 is y coordinate
+    returnEvent->param2 = EM_ASM_INT_V({
+      return brogue.state.nextEvent.param2;
+    });
+  }
+  returnEvent->controlKey = EM_ASM_INT_V({
+    return brogue.state.nextEvent.ctrlKey;
+  });
+  returnEvent->shiftKey = EM_ASM_INT_V({
+    return brogue.state.nextEvent.shiftKey;
+  });
 }
 
 static void web_remap(const char *input_name, const char *output_name) {

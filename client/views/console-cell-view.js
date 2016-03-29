@@ -4,9 +4,8 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    "dataIO/send-mouse",
     "models/console-cell"
-], function($, _, Backbone, sendMouseEvent, CellModel) {
+], function($, _, Backbone, CellModel) {
 
     // See BrogueCode/rogue.h for all brogue event definitions
     var MOUSE_UP_EVENT_CHAR = 1;
@@ -21,11 +20,11 @@ define([
         events : {
             "click" : "handleClick"
         },
-        
+
         initialize: function() {
             this.applySize();
         },
-        
+
         render: function() {
             var cellCharacter = String.fromCharCode(this.model.get("char"));
             var rgbForegroundString = "rgb(" +
@@ -42,7 +41,7 @@ define([
             this.el.style.backgroundColor = rgbBackgroundString;
             return this;
         },
-        
+
         applySize : function(){
             this.el.style.width = this.model.get("widthPercent") + "%";
             this.el.style.height = this.model.get("heightPercent") + "%";
@@ -51,20 +50,20 @@ define([
             this.el.style.fontSize = this.model.get("charSizePx") + "px";
             this.el.style.paddingTop = this.model.get("charPaddingPx") + "px";
         },
-        
+
         handleClick : function(event){
-            sendMouseEvent(
-                MOUSE_DOWN_EVENT_CHAR, 
-                this.model.get("x"), 
-                this.model.get("y"), 
-                event.ctrlKey, 
+            brogue.bridge.sendInput.mouse(
+                MOUSE_DOWN_EVENT_CHAR,
+                this.model.get("x"),
+                this.model.get("y"),
+                event.ctrlKey,
                 event.shiftKey
             );
-            sendMouseEvent(
-                MOUSE_UP_EVENT_CHAR, 
-                this.model.get("x"), 
-                this.model.get("y"), 
-                event.ctrlKey, 
+            brogue.bridge.sendInput.mouse(
+                MOUSE_UP_EVENT_CHAR,
+                this.model.get("x"),
+                this.model.get("y"),
+                event.ctrlKey,
                 event.shiftKey
             );
         }
