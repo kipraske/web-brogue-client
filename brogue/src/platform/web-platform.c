@@ -69,8 +69,8 @@ static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, 
   // TODO - implement color dancing, see tcod-platform...
 
   int input_ready = EM_ASM_INT_V({
-    brogue.state.nextEvent = brogue.state.eventQueue.shift();
-    if (brogue.state.nextEvent){
+    if (brogue.state.eventQueue.length > 0){
+      brogue.state.nextEvent = brogue.state.eventQueue.shift();
       return true;
     } else {
       return false;
