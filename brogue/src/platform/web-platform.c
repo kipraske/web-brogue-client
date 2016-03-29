@@ -46,12 +46,13 @@ static void web_plotChar(uchar inputChar,
 
 }
 
-// This function is used both for checking input and pausing
+// This function is used for pausing, but also returns if true if there are
+// input events to process
 static boolean web_pauseForMilliseconds(short milliseconds)
 {
   emscripten_sleep_with_yield(milliseconds);
   int input_ready = EM_ASM_INT_V({
-    return brogue.state.nextKeyOrMouseReady;
+    return (brogue.state.eventQueue.length > 0);
   });
 
   return input_ready;
@@ -59,51 +60,51 @@ static boolean web_pauseForMilliseconds(short milliseconds)
 
 #define PAUSE_BETWEEN_EVENT_POLLING		36//17
 
+// This function is used to wait for new key or mouse events.
+// It will not return until we have executed an event
 static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, boolean colorsDance)
 {
   // because we will halt execution until we get more input, we definitely cannot have any dancing colors from the server side.
   //colorsDance = false;
   // TODO - implement color dancing, see tcod-platform...
 
-  returnEvent->eventType = EM_ASM_INT_V({
-    return brogue.state.nextEventType;
+  int input_ready = EM_ASM_INT_V({
+    return (brogue.state.eventQueue.length > 0);
   });
 
-  if (returnEvent->eventType == KEYSTROKE){
-    // param1 is the keyChar
-    returnEvent->param1 = EM_ASM_INT_V({
-      return brogue.state.nextKeyCode;
-    });
-    returnEvent->controlKey = EM_ASM_INT_V({
-      return brogue.state.nextKeyModifier.ctrlKey;
-    });
-    returnEvent->shiftKey = EM_ASM_INT_V({
-      return brogue.state.nextKeyModifier.shiftKey;
-    });
-  }
-  else // it is a mouseEvent
-  {
-    // param1 is x coordinate
-    returnEvent->param1 = returnEvent->param1 = EM_ASM_INT_V({
-      return brogue.state.nextMouseCoords.x;
-    });
-    // param2 is y coordinate
-    returnEvent->param2 = returnEvent->param1 = EM_ASM_INT_V({
-      return brogue.state.nextMouseCoords.y;
-    });
-    returnEvent->controlKey = EM_ASM_INT_V({
-      return brogue.state.nextKeyModifier.ctrlKey;
-    });
-    returnEvent->shiftKey = EM_ASM_INT_V({
-      return brogue.state.nextKeyModifier.shiftKey;
-    });
+  if (!input_ready){
+    emscripten_sleep_with_yield(PAUSE_BETWEEN_EVENT_POLLING);
+    web_nextKeyOrMouseEvent(returnEvent, textInput, colorsDance);
   }
 
+  if (noMenu && rogue.nextGame == NG_NOTHING) rogue.nextGame = NG_NEW_GAME;
+
+  // Get next event from queue
   EM_ASM({
-    brogue.state.nextKeyOrMouseReady = false;
+    brogue.state.nextEvent = brogue.state.eventQueue.shift();
   });
 
-  web_pauseForMilliseconds(PAUSE_BETWEEN_EVENT_POLLING);
+  returnEvent->eventType = EM_ASM_INT_V({
+    return brogue.state.nextEvent.eventType;
+  });
+
+  // param1 is the keyChar for Keystroke or xCoord for Mouse
+  returnEvent->param1 = EM_ASM_INT_V({
+    return brogue.state.nextEvent.param1;
+  });
+
+  if (returnEvent->eventType != KEYSTROKE){ //so a mouse event
+    // param2 is y coordinate
+    returnEvent->param2 = EM_ASM_INT_V({
+      return brogue.state.nextEvent.param2;
+    });
+  }
+  returnEvent->controlKey = EM_ASM_INT_V({
+    return brogue.state.nextEvent.ctrlKey;
+  });
+  returnEvent->shiftKey = EM_ASM_INT_V({
+    return brogue.state.nextEvent.shiftKey;
+  });
 }
 
 static void web_remap(const char *input_name, const char *output_name) {

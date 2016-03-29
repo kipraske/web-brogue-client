@@ -39,28 +39,25 @@ brogue.bridge = {
 			brogue.viewBindings.updateCell(brogue.state.nextPlotChar);
 		}
 	},
-	// Set input event information. Checked in web_pauseForMilliseconds
+	// Set input event information. Queue is checked in web_pauseForMilliseconds
+	// and web_nextKeyOrMouseEvent
 	sendInput: {
 		keypress: function(eventCharCode, keyCode, ctrlKey, shiftKey){
-			brogue.state.nextKeyOrMouseReady = true;
-			brogue.state.nextEventType = eventCharCode; // should always be 0
-			brogue.state.nextKeyCode = keyCode;
-			brogue.state.nextKeyModifier = {
+			brogue.state.eventQueue.push({
+				eventType: eventCharCode,
+				param1: keyCode,
 				ctrlKey: ctrlKey,
 				shiftKey: shiftKey
-			};
+			});
 		},
 		mouse: function(eventCharCode, xCoord, yCoord, ctrlKey, shiftKey){
-			brogue.state.nextKeyOrMouseReady = true;
-			brogue.state.nextEventType = eventCharCode; // should always be int from 1 to 5
-			brogue.state.nextMouseCoords = {
-				x: xCoord,
-				y: yCoord
-			};
-			brogue.state.nextKeyModifier = {
+			brogue.state.eventQueue.push({
+				eventType: eventCharCode,
+				param1: xCoord,
+				param2: yCoord,
 				ctrlKey: ctrlKey,
 				shiftKey: shiftKey
-			};
+			});
 		}
 	}
 };
@@ -77,15 +74,7 @@ brogue.state = {
 		bGreen : 0,
 		bBlue : 0
 	},
-	nextKeyOrMouseReady : false,
-	nextEventType : 0,
-	nextKeyCode : 0,
-	nextMouseCoords : {
-		x: 0,
-		y: 0
-	},
-	nextKeyModifier : {
-		ctrlKey: 0,
-		shiftKey: 0
-	}
+	// an js-array queue. Use: use push to enter queue, and shift to leave
+	eventQueue : [],
+	nextEvent : null
 };
