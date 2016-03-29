@@ -69,7 +69,12 @@ static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, 
   // TODO - implement color dancing, see tcod-platform...
 
   int input_ready = EM_ASM_INT_V({
-    return (brogue.state.eventQueue.length > 0);
+    brogue.state.nextEvent = brogue.state.eventQueue.shift();
+    if (brogue.state.nextEvent){
+      return true;
+    } else {
+      return false;
+    }
   });
 
   if (!input_ready){
@@ -78,11 +83,6 @@ static void web_nextKeyOrMouseEvent(rogueEvent *returnEvent, boolean textInput, 
   }
 
   if (noMenu && rogue.nextGame == NG_NOTHING) rogue.nextGame = NG_NEW_GAME;
-
-  // Get next event from queue
-  EM_ASM({
-    brogue.state.nextEvent = brogue.state.eventQueue.shift();
-  });
 
   returnEvent->eventType = EM_ASM_INT_V({
     return brogue.state.nextEvent.eventType;
